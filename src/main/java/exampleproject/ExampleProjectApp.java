@@ -15,6 +15,7 @@ public class ExampleProjectApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        // your code here
         primaryStage.setTitle("Example App");
         primaryStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("App.fxml"))));
         primaryStage.show();
