@@ -1,86 +1,59 @@
-# Skjelettprosjekt for TDT4100 prosjekt V2023
+# Beskrivelse av prosjektet
+## Hva er det?
+Prosjektet er et spill inspirert av [Space Invaders](https://en.wikipedia.org/wiki/Space_Invaders) og lignende Arcade-spill. Spilleren er en figur nederst på skjermen som kan bevege seg til høyre og venstre. Målet med spillet er å sanke så mange poeng som mulig. Man får poeng av å ta imot blobbene som regner ned. Hvis man ikke tar imot en blob, mister man ett liv.
 
-Dette repoet er et skjelettprosjekt for TDT4100 prosjektet våren 2023.
+### Bilde av applikasjonen:
+![](./app.png)
 
-Vi har opprettet et eksempelprosjekt her, som ment for at dere skal kunne komme raskt igang med deres eget prosjekt.
+## Logikk og struktur
+Spill-logikken finner vi i pakken [`hovedprosjekt.Model`](./src/main/java/hovedprosjekt/Model), hvor klassen [`Computer`](./src/main/java/hovedprosjekt/Model/Computer.java) er den viktigste. Denne klassen er ansvarlig for å holde orden på spilleren og de andre entitetene i spillet, og for å sjekke etter kollisjoner og kalkulere liv og score. Spilltilstanden består av et spiller-objekt, en liste over entiteter, antall liv og nåværende score.
 
-## TL;DR
+Spillet er tikk-basert. Slik det er satt opp akkurat nå, kjøres en `while`-løkke så lenge spillet er aktivt. Der kjøres alt av kalkulasjoner og applikasjonen sover i 10 millisekunder før neste kjøring. Dette fungerer greit når belastningen av kalkulasjonene er såpass konsistente som her. Hvis det er mye variasjon kan spillet virke hakkete, og delta tid ville vært en bedre løsning.
 
-Lag en ny mappe i `src/main/java/` som er deres prosjekt. Opprett en startsfil for appen, slik som [ExampleProjectApp.java](src/main/java/exampleproject/ExampleProjectApp.java) og en kontroller som [ExampleProjectController.java](src/main/java/exampleproject/ExampleProjectController.java) i denne nye mappen. Lag så en mappe i `src/main/resources` med samme navn som prosjektet deres og et view som [App.fxml](src/main/resources/exampleproject/App.fxml) i denne nye mappen.
+Vi representerer blobbene ved hjelp av listen over entiteter. Dette er en `List` av `Entity`-objekter. Blobbene i spillet er av klassen `NormalBlob`, som implementerer `Entity`. Når `updateGUI` kjøres hvert tikk, itereres det gjennom denne lista, og blobbene tegnes opp på der koordinatene tilsier. Tanken bak å lage `Entity` som en abstrakt klasse, er at man kan lage andre blobber også, for eksempel noen som gir mer poeng, noen som gir deg flere liv osv. Når avstanden mellom spilleren og en blob er mindre enn 20 (radius i blobben er 5 og spilleren er 30x30, 15+5=20) anser spillet blobben som tatt imot, og den fjernes fra listen. 
 
-**Eventuelt**: Endre navn på filer og mapper fra "ExampleProject" til deres prosjektnavn.
+## Krav
+* Det var et krav at tilstanden i objektene skal være innkapslet. Dette har jeg gjort ved å gjøre alle felter `private` og brukt getter og setter-metoder der det er behov for det. Videre skulle man validere tilstanden. Dette har jeg gjort ved å legge inn sjekker i de `set`-metodene hvor det er passelig.
 
-## Litt rask info
+* Det skulle implementeres et grensesnitt. Dette har jeg gjort med `EntityListIterator`.
 
-Allerede nå er det mulig å kjøre filen [ExampleProjectApp.java](src/main/java/exampleproject/ExampleProjectApp.java) i VSCode for å få opp en liten kalkulator-app.
+* Det skulle være minst 2 interagerende klasser. Jeg har 8.
 
-Denne filen er "startsfilen" til applikasjonen. Her settes tittel på appen, hvilken FXML-fil som skal brukes, og den er ansvarlig for å starte selve applikasjonen:
+* Minst 1 klasse skulle ha funksjonalitet utover ren datalagring. Se feks på `Computer` eller `EntityListIterator`. 
 
-```java
-primaryStage.setTitle("Example App"); // Setter tittel på vinduet
-primaryStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("App.fxml")))); // Sier at appen skal bruke "App.fxml"
-primaryStage.show(); // Viser vinduet
-```
+* Appen skulle lages etter Model-View-Controller prinsippet. Dette har jeg gjort ved å legge det meste av logikken i `Model`, mens `Controller` fungerer som et bindeledd mellom `Model` og `View`. 
 
-Kontrolleren til applikasjonen er [ExampleProjectController.java](src/main/java/exampleproject/ExampleProjectController.java). Denne filen er "bindeleddet" mellom FXML-filen(e) og klassen(e) som skal brukes i applikasjonen. I dette eksempelprosjektet har den to metoder: `initCalculator` og `handleButtonClick`. I tillegg har den noen felter som er annotert med `@FXML`. Dette viser at de tilhører [FXML-filen](src/main/resources/exampleproject/App.fxml) vår. Her er navnet på variablene viktige. F.eks er `private Label result` på linje 12 bundet til `Label`-feltet på linje 15 i [FXML-filen](src/main/resources/exampleproject/App.fxml), siden denne har en `fx:id = "result"` og variabelen vår heter `result`:
+* Minst 1 ny klasse skulle håndtere lesing og skriving til fil. Se `HighScore`.
 
-```java
-@FXML
-private Label result; // Fra ExampleProjectApp.java
+* Det skal være implementert hensiktsmessig feilhåndtering i alle utsatte deler av appen. I denne appen er filhåndteringen en utsatt del hvor det kan oppstå feil, og disse blir skrevet ut. Game-loopen er også utsatt, og her blir feil også fanget.
 
-<Label fx:id="result" layoutX="257.0" layoutY="244.0" /> // Fra App.fxml
-```
+* Det skal være minst 6 enhetstester, hvor minst 1 tester fillagring. Jeg har over 6 tester og `testHighScore` tester fillagring.
 
-Noe liknende skjer med metoden `handleButtonClick`, som også er annotert med `@FXML`. Dette gjøres slik at vi "får tak i" denne metoden fra [FXML-filen](src/main/resources/exampleproject/App.fxml). `Button`-feltet i [FXML-filen](src/main/resources/exampleproject/App.fxml) har en `onAction="#handleButtonClick"`, som vil si at metoden `handleButtonClick`, som er annotert med `@FXML`, blir kjørt når vi trykker på knappen:
+# Om klassene
+Appen består av 8 klasser gitt at vi ikke regner med Controller eller App-klassene. 
 
-```xml
-<Button layoutX="271.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleButtonClick" text="Kalkuler" /> <!-- Fra App.fxml -->
-```
+## Vars
+Denne klassen inneholder en enum for spillerbevegelser, bestående av verdiene `LEFT`, `NONE` og `RIGHT`. 
 
-Det som gjør at [kontrolleren](src/main/java/exampleproject/ExampleProjectController.java) og [FXML-filen](src/main/resources/exampleproject/App.fxml) er koblet sammen er attributten `fx:controller='exampleproject.ExampleProjectController'` på det aller ytterste elementet i [FXML-filen](src/main/resources/exampleproject/App.fxml).
+## Value
+Denne klassen ble laget som en wrapper for en `int`. Jeg trengte en klasse som kunne holde på et tall og samtidig være mutable. Ettersom `int` ikke er en klasse (men en primitiv type) og `Integer` er immutable, måtte jeg lage min egen klasse. Value-klassen har tre felter; `value`, `maxValue` og `minValue`. Følgelig har man også metodene `getValue`, `getMinValue`, `getMaxValue`, `setMinValue`, `setMaxValue` og `incrementValue`. Disse er stort sett selvforklarende, men `incrementValue` tar inn en `int` – som kan være positiv eller negativ – og inkrementerer `value` med denne verdien.
 
-```xml
-<AnchorPane fx:id="background" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="exampleproject.ExampleProjectController"> <!-- Fra App.fxml -->
-```
+## Entity
+Dette er en abstrakt klasse som kan brukes for å implementere entiteter i spillet. Klassen har to felter; `xPos` og `yPos`, som representerer koordinatene til entiteten. Videre er det to metoder; `getPosition` og `setPosition` for å behandle de to koordinat-feltene. 
 
-Så, når vi trykker på knappen i appen blir som sagt metoden `handleButtonClick` kjørt. Det som skjer inne i denne metoden er først at vi oppretter en ny [kalkulator](src/main/java/exampleproject/Calculator.java). Ved opprettelse av en kalkulator trenger vi en `operator`. Denne henter vi ut fra hva en bruker av appen har skrevet inn i `TextField`-feltet med `fx:id="operator"`. Siden vi allerede har opprettet en variabel `private TextField operator`, som er annortert med `@FXML`, er denne allere linket til dette `TextField`-feltet, og vi kan hente ut teksten som er skrevet inn med `operator.getText()`.
+## NormalBlob
+Denne klassen implementerer (extends) `Entity`, og har i tillegg et felt `points`. Dette er antall poeng en spiller får for å fange denne entiteten. Klassen har to nye metoder; `setPoints` og `getPoints` for å interagere med dette feltet.
 
-```java
-initCalculator(operator.getText()); // Kaller på initCalculator som oppretter en ny kalkulator. Operator.getText() henter ut teksten som er skrevet inn i `operator`-feltet.
-```
+## Player
+Denne klassen implementerer også `Entity`, og den har feltene `movement` og `speed`. `movement` er en enum fra klassen `Vars` og `speed` er en `int`. `Player` har to konstruktører, én hvor du kan oppgi x og y-koordinatene til objektet, og én som ikke tar inn noen parametere. Det er også metoder for `getMovement` og `setMovement` (selvforklarende), samt `moveLeft` og `moveRight` som endrer x-koordinaten (legger til eller trekker fra `speed`) til entiteten i den bestemte retningen.
 
-Det samme gjelder nedover i metoden; vi henter ut verdier fra `firstNumber` og `secondNumber`. Det som er verdt å merke seg her er at de blir hentet ut som `String`s, men kalkulatoren vår krever `int`s. Derfor gjør vi de også om til integers. Her bør man og være litt forsiktige, da det ikke er gitt at brukere skriver inn gyldige tall. Derfor har vi wrappet dette inn i en `try/catch`, som sier ifra dersom tallet er ugyldig.
+## EntityListIterator
+Denne klassen implenterer `Iterator`-grensesnittet og har derfor metodene `next` og `hasNext`. Ettersom jeg fjerner elementer fra lista når jeg bruker denne iteratoren, starter den å iterere fra bakerste element i lista. Elementene fra iteratoren blir derfor ikke forskjøvet når jeg fjerner elementer fra lista. 
 
-I tillegg til alt dette er det laget en liten [eksempel testfil](src/test/java/exampleproject/CalculatorTest.java). Ingenting spennende som skjer her, det er en test for konstruktøren til [kalkulator klassen vår](src/main/java/exampleproject/Calculator.java), samt en test for metoden `calculate` den har. Alle tester dere skriver til klassene deres legges altså inn i mappen `src/test/java/<deres_prosjekt>`.
+## HighScore
+Denne klassen håndterer lesing og skriving til fil for å lagre highscore. Den har metodene `getHighScore` og `setHighScore`. Denne funksjonaliteten kunne uten problem vært i `Computer`, men det var et krav i oppgaven at filhåndteringen skulle foregå i en egen klasse. 
 
-## For å komme i gang med deres eget prosjekt
+## Computer
+Denne klassen inneholder det meste av logikken til spillet. Her brukes de andre klassene som støtteklasser for at ting skal fungere som ønsket. Det er et `player`-felt for et `Player`-objekt. Dette objektet brukes for å lagre koordinatene til spilleren, og for å bevege spilleren når det er ønskelig. Det er et felt for en liste av `Entity`-objekter; den inneholder alle «blobbene» som i ethvert øyeblikk befinner seg i spillet. Det er et felt for score og et felt for liv, som bruker `Value` som er wrapper for et tall. `width` og `height` refererer til dimensjonene på canvas-objektet i FXML, som er satt til 500 x 500. Når det kommer til metoder, så er det en `reset`-metode. Denne tømmer lista over entiteter, setter score til 0, liv til 5 og endrer spillerens koordinater til midt på. Det er også gettere for alle feltene, samt en `getHighScore` og en `setHighScore` som delegerer videre til et `HighScore`-objekt. Det er også metoder for å lage nye «blobber», sjekke om en entitet kolliderer med spilleren og regne ut nye koordinater til blobbene. Det er også en metode som kjøres hvert tikk, hvor det er en sjanse for at nye «blobber» lages og hvor utregning av nye koordinater, kollisjoner, samt endringer i score og liv foregår. 
 
-1. Inviter gruppemedlemmene dine til dette repoet, og gi de minst en `Developer`-rolle (helst `Maintainer`)
-2. Klon dette prosjektet et sted på maskinen deres (ikke inne i Students-mappen, men gjerne i samme mappe denne ligger i).
-    - Dersom du har aktivert 2FA på GitLab-kontoen din og blir bedt om innlogging ved kloning/pushing av/til repoet må du opprette en [personal access token](https://gitlab.stud.idi.ntnu.no/-/profile/personal_access_tokens) som har "read_repository" og "write_repository"-rettigheter. Deretter kan du logge inn med ditt feidebrukernavn som brukernavn og denne tokenen som blir laget til deg som passord. En guide for hvordan opprette personal access token finnes [her](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token).
-3. Lag en ny mappe i `src/main/java/` som er deres prosjekt.
-4. Opprett en startsfil for appen deres, slik som [ExampleProjectApp.java](src/main/java/exampleproject/ExampleProjectApp.java) og en kontroller som [ExampleProjectController.java](src/main/java/exampleproject/ExampleProjectController.java) i deres nye prosjekt-mappe.
-5. Opprett en ny mappe i `src/main/resources/` som er deres prosjekt.
-6. Opprett en FXML-fil, slik som [App.fxml](src/main/resources/exampleproject/App.fxml) i deres nye prosjekt-mappe i `src/main/resources/`.
-7. **HUSK** å legge inn `fx:controller='<deres_prosjekt>.<deres_kontroller>'` på det aller ytterste elementet i den nye FXML-filen deres, ellers vil ikke appen starte.
-
-**Eventuelt**: Endre navn på filer og mapper fra "ExampleProject" til deres prosjektnavn.
-
-## Reminder av nøkkelpunkter
-
-| Nøkkelpunkt                              | Beskrivelse                             |
-| ---------------------------------------- | --------------------------------------- |
-| Innleveringsfrist                        | 14. april                               |
-| Demonstrasjonsfrist hos læringsassistent | 21. mai                                 |
-| Gruppestørrelse                          | 1 eller 2 personer                      |
-
-### Anbefalte perioder å jobbe med prosjektet
-
-| Uke   | Fra  | Til  | Beskrivelse                                 |
-| ----- | ---- | ---- | ------------------------------------------- |
-| 12    | 20/3 | 24/2 | Grunnklasser og brukergrensesnitt           |
-| 13    | 27/3 | 31/3 | Lagring of filhåndtering                    |
-| 14    |      |      | Påske                                       |
-| 15    | 10/4 | 14/4 | Fullføre appen med tilhørende dokumentasjon |
-
-**_LYKKE TIL_**
+**All kode har også java-docs som beskriver hvordan klassene og metodene fungerer, i tillegg til kommentarer i koden der det er relevant.**

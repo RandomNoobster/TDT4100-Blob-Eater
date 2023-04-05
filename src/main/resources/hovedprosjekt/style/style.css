@@ -1,0 +1,52 @@
+.score-text {
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+    -fx-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);
+}
+
+.game-over-text {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-fill: #154B52;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, 0);
+}
+
+.your-score-text {
+    -fx-font-size: 24px;
+    -fx-fill: #154B52;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);
+}
+
+.restart-button {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #154B52;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 0);
+}
+
+.restart-button:hover {
+    -fx-background-color: #154B52;
+    -fx-text-fill: #ffffff;
+}
+
+.lives-text {
+    -fx-font-size: 14px;
+    -fx-fill: #ffffff;
+}
+
+.top-wrapper {
+    -fx-background-color: #1C8394;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 0);
+}
+
+.background {
+    -fx-background-color: #154B52;
+}
+
+.canvas {
+
+}
