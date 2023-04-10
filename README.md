@@ -8,52 +8,23 @@ Prosjektet er et spill inspirert av [Space Invaders](https://en.wikipedia.org/wi
 ## Logikk og struktur
 Spill-logikken finner vi i pakken [`hovedprosjekt.Model`](./src/main/java/hovedprosjekt/Model), hvor klassen [`Computer`](./src/main/java/hovedprosjekt/Model/Computer.java) er den viktigste. Denne klassen er ansvarlig for å holde orden på spilleren og de andre entitetene i spillet, og for å sjekke etter kollisjoner og kalkulere liv og score. Spilltilstanden består av et spiller-objekt, en liste over entiteter, antall liv og nåværende score.
 
-Spillet er tikk-basert. Slik det er satt opp akkurat nå, kjøres en `while`-løkke så lenge spillet er aktivt. Der kjøres alt av kalkulasjoner og applikasjonen sover i 10 millisekunder før neste kjøring. Dette fungerer greit når belastningen av kalkulasjonene er såpass konsistente som her. Hvis det er mye variasjon kan spillet virke hakkete, og delta tid ville vært en bedre løsning.
+Spillet er tikk-basert. Slik det er satt opp akkurat nå, kjøres en `while`-løkke så lenge spillet er aktivt. Der kjøres alt av kalkulasjoner og applikasjonen sover i 10 millisekunder før neste kjøring. Dette fungerer greit når belastningen av kalkulasjonene er såpass konsistente som her. Hvis det er mye variasjon i kalkulasjonstiden kan spillet virke hakkete, og delta tid ville vært en bedre løsning.
 
-Vi representerer blobbene ved hjelp av listen over entiteter. Dette er en `List` av `Entity`-objekter. Blobbene i spillet er av klassen `NormalBlob`, som implementerer `Entity`. Når `updateGUI` kjøres hvert tikk, itereres det gjennom denne lista, og blobbene tegnes opp på der koordinatene tilsier. Tanken bak å lage `Entity` som en abstrakt klasse, er at man kan lage andre blobber også, for eksempel noen som gir mer poeng, noen som gir deg flere liv osv. Når avstanden mellom spilleren og en blob er mindre enn 20 (radius i blobben er 5 og spilleren er 30x30, 15+5=20) anser spillet blobben som tatt imot, og den fjernes fra listen. 
+# Diagram
+Dette klassediagrammet viser klassestrukturen i logikk-klassene (`Model`).
+![](./klassediagram.png)
 
-## Krav
-* Det var et krav at tilstanden i objektene skal være innkapslet. Dette har jeg gjort ved å gjøre alle felter `private` og brukt getter og setter-metoder der det er behov for det. Videre skulle man validere tilstanden. Dette har jeg gjort ved å legge inn sjekker i de `set`-metodene hvor det er passelig.
+# Spørsmål
+1.	Arv benyttes for å implementerere den abstrakte klassen `Entity`. Klassen `NormalBlob` og klassen `Player` er de klassene som gjør dette. `Entity` kunne også vært et grensenitt, men da måtte noen identiske kodesnutter blitt skrevet i alle klasser som implementerte det, nemlig `getPosition`, `setPosition` og feltene `xPos` og `yPos`. En abstrakt klasse er derfor en bedre løsning, ettersom disse kan skrives samlet på ett sted. En bakside med tanke på innkapsling, er at `xPos` og `yPos` må være `protected` for at subklasser skal ha tilgang til dem, men dette gjør dem også tilgjengelig til andre klasser i pakken. Med tanke på innkapsling, burde `xPos` og `yPos` trolig blitt definert på nytt i alle subklasser, ettersom de da kan være `private`.
 
-* Det skulle implementeres et grensesnitt. Dette har jeg gjort med `EntityListIterator`.
+    Interface brukes i klassen EntityListIterator. Denne klassen implenterer `Iterator`-grensesnittet og har derfor metodene `next` og `hasNext`. Ettersom jeg fjerner elementer fra lista når jeg bruker denne iteratoren, starter den å iterere fra bakerste element i lista. Elementene fra iteratoren blir derfor ikke forskjøvet når jeg fjerner elementer fra lista.
 
-* Det skulle være minst 2 interagerende klasser. Jeg har 8.
+    Delegering benyttes i `Computer`. I metodene `getHighScore` og `setHighScore`, delegeres det til et `HighScore`-objekt. Denne klassen håndterer lesing og skriving til fil for å lagre highscore. Den har metodene `getHighScore` og `setHighScore`. Denne funksjonaliteten kunne uten problem vært i `Computer`, men det var et krav i oppgaven at filhåndteringen skulle foregå i en egen klasse.
 
-* Minst 1 klasse skulle ha funksjonalitet utover ren datalagring. Se feks på `Computer` eller `EntityListIterator`. 
+2.	Observatør-observert-teknikken er noe jeg ikke har brukt i prosjektet. Det hadde vært mulig å bruke det mellom spilleren og blobbene. `Player`-objektet kunne observert alle blobbene, og blobbene kunne gitt beskjed når de var nærme nok spilleren til å kollidere (+1 score) eller når de treffer bunnen av spillet (-1 liv). Det hadde også vært mulig å bruke det i `tick`-metoden i `Computer`. Her sjekker jeg om `Player`-objektet er satt til å bevege seg til høyre eller venstre, og jeg kjører `player.getMovement()`, selv om `movement` kanskje er det samme som forrige gang metoden ble kjørt. Hvis jeg bruker Observatør-observert-teknikken, slipper jeg å sjekke hva bevegelsen er satt til, ettersom den blir oppdatert når en endring skjer. Et annet eksempel på anvendelse av Observatør-observert-teknikken nevnes i punktet om MVC.
 
-* Appen skulle lages etter Model-View-Controller prinsippet. Dette har jeg gjort ved å legge det meste av logikken i `Model`, mens `Controller` fungerer som et bindeledd mellom `Model` og `View`. 
+3. Dette har jeg gjort ved å legge det meste av logikken i `Model`, mens `Controller` fungerer som et bindeledd mellom `Model` og `View`. Jeg har en del felter i `Controller`, men mange av disse er bare referanser til felter i et `Computer`-objekt (som fungerer som `Model`), for å slippe å definere variablene på nytt (`Something something = computer.getSomething()`) for hver eneste metode. Selv om de fleste feltene i `Controller` ikke utgjør en unik del av tilstanden, er det noen felter som gjør det. Disse inkluderer `gameActive` og `gameThread`, som henholdsvis holder styr på om spillet er aktivt og tråden spillet kjører i. Logikken for å kjøre selve game-loopen befinner seg altså i `Controller`. Med tanke på MVC, kunne dette vært plassert i `Model`, og jeg kunne ha brukt Observatør-observert-teknikken for å oppdatere `View` når en endring skjer i `Model`. Når det kommer til `View`-delen, er denne for øyeblikket kun koblet opp mot `Controlleren`, slik den skal være.
 
-* Minst 1 ny klasse skulle håndtere lesing og skriving til fil. Se `HighScore`.
-
-* Det skal være implementert hensiktsmessig feilhåndtering i alle utsatte deler av appen. I denne appen er filhåndteringen en utsatt del hvor det kan oppstå feil, og disse blir skrevet ut. Game-loopen er også utsatt, og her blir feil også fanget.
-
-* Det skal være minst 6 enhetstester, hvor minst 1 tester fillagring. Jeg har over 6 tester og `testHighScore` tester fillagring.
-
-# Om klassene
-Appen består av 8 klasser gitt at vi ikke regner med Controller eller App-klassene. 
-
-## Vars
-Denne klassen inneholder en enum for spillerbevegelser, bestående av verdiene `LEFT`, `NONE` og `RIGHT`. 
-
-## Value
-Denne klassen ble laget som en wrapper for en `int`. Jeg trengte en klasse som kunne holde på et tall og samtidig være mutable. Ettersom `int` ikke er en klasse (men en primitiv type) og `Integer` er immutable, måtte jeg lage min egen klasse. Value-klassen har tre felter; `value`, `maxValue` og `minValue`. Følgelig har man også metodene `getValue`, `getMinValue`, `getMaxValue`, `setMinValue`, `setMaxValue` og `incrementValue`. Disse er stort sett selvforklarende, men `incrementValue` tar inn en `int` – som kan være positiv eller negativ – og inkrementerer `value` med denne verdien.
-
-## Entity
-Dette er en abstrakt klasse som kan brukes for å implementere entiteter i spillet. Klassen har to felter; `xPos` og `yPos`, som representerer koordinatene til entiteten. Videre er det to metoder; `getPosition` og `setPosition` for å behandle de to koordinat-feltene. 
-
-## NormalBlob
-Denne klassen implementerer (extends) `Entity`, og har i tillegg et felt `points`. Dette er antall poeng en spiller får for å fange denne entiteten. Klassen har to nye metoder; `setPoints` og `getPoints` for å interagere med dette feltet.
-
-## Player
-Denne klassen implementerer også `Entity`, og den har feltene `movement` og `speed`. `movement` er en enum fra klassen `Vars` og `speed` er en `int`. `Player` har to konstruktører, én hvor du kan oppgi x og y-koordinatene til objektet, og én som ikke tar inn noen parametere. Det er også metoder for `getMovement` og `setMovement` (selvforklarende), samt `moveLeft` og `moveRight` som endrer x-koordinaten (legger til eller trekker fra `speed`) til entiteten i den bestemte retningen.
-
-## EntityListIterator
-Denne klassen implenterer `Iterator`-grensesnittet og har derfor metodene `next` og `hasNext`. Ettersom jeg fjerner elementer fra lista når jeg bruker denne iteratoren, starter den å iterere fra bakerste element i lista. Elementene fra iteratoren blir derfor ikke forskjøvet når jeg fjerner elementer fra lista. 
-
-## HighScore
-Denne klassen håndterer lesing og skriving til fil for å lagre highscore. Den har metodene `getHighScore` og `setHighScore`. Denne funksjonaliteten kunne uten problem vært i `Computer`, men det var et krav i oppgaven at filhåndteringen skulle foregå i en egen klasse. 
-
-## Computer
-Denne klassen inneholder det meste av logikken til spillet. Her brukes de andre klassene som støtteklasser for at ting skal fungere som ønsket. Det er et `player`-felt for et `Player`-objekt. Dette objektet brukes for å lagre koordinatene til spilleren, og for å bevege spilleren når det er ønskelig. Det er et felt for en liste av `Entity`-objekter; den inneholder alle «blobbene» som i ethvert øyeblikk befinner seg i spillet. Det er et felt for score og et felt for liv, som bruker `Value` som er wrapper for et tall. `width` og `height` refererer til dimensjonene på canvas-objektet i FXML, som er satt til 500 x 500. Når det kommer til metoder, så er det en `reset`-metode. Denne tømmer lista over entiteter, setter score til 0, liv til 5 og endrer spillerens koordinater til midt på. Det er også gettere for alle feltene, samt en `getHighScore` og en `setHighScore` som delegerer videre til et `HighScore`-objekt. Det er også metoder for å lage nye «blobber», sjekke om en entitet kolliderer med spilleren og regne ut nye koordinater til blobbene. Det er også en metode som kjøres hvert tikk, hvor det er en sjanse for at nye «blobber» lages og hvor utregning av nye koordinater, kollisjoner, samt endringer i score og liv foregår. 
+4. Som nevnt helt i starten, går spillet ut på at en spiller beveger seg til sidene og forsøker å fange blobber. Spilleren har et antall liv og en score. Det er derfor dette som er kjernefunksjonaliteten til appen. Ikke alt er like viktig å teste, men kjernefunksjonalitet er svært viktig og derfor har jeg prioritert å teste nettopp dette i enhetstestene. Først og fremst testes konstruktørene til `Computer`, `Player` og `Value`. Videre testes oppførsel til disse. For eksempel testes det at man starter med 5 liv og 0 score, at spilleren beveger seg riktig, at spillerens posisjon er riktig, at liv og score ikke kan være negativ, at det trekkes fra/legges til riktige verdier til liv og score, eller at lesing og skriving av highscore til fil fungerer riktig. Andre deler av koden testes ikke, og dette er fordi det er av lavere prioritet/det er ikke en del av kjernefunksjonaliteten. `EntityListIterator` er et eksempel på dette. Denne klassen er kun ment som en hjelpeklasse for å utføre kalkulasjoner i den mer sentrale `Computer`-klassen.
 
 **All kode har også java-docs som beskriver hvordan klassene og metodene fungerer, i tillegg til kommentarer i koden der det er relevant.**

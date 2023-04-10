@@ -25,9 +25,9 @@ public class Controller {
     // Dette er egentlig all tilstanden vi har i Controller
     private Thread gameThread = new Thread();
     private boolean gameActive;
-    private Image sprite = new Image("/hovedprosjekt/media/heart.png");
+    private final Image sprite = new Image("/hovedprosjekt/media/heart.png");
 
-    // under er objekter som allerede er opprettet i Computer.java. De er her
+    // under er objekter som allerede er opprettet i Computer.java. Feltene er her
     // for å gjøre de lettere å referere til.
     private Computer computer;
     private Player player;
