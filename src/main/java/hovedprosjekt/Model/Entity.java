@@ -18,7 +18,7 @@ public abstract class Entity {
      * @return the x-position and y-position of the entity
      */
     public double[] getPosition() {
-        return new double[] { xPos, yPos };
+        return new double[] { this.xPos, this.yPos };
     }
 
     /**

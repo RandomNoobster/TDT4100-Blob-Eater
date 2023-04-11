@@ -54,7 +54,7 @@ public class Computer {
                 entities.remove(entity);
                 score.incrementValue(1);
                 System.out.println(score);
-            } else if (entity.getPosition()[1] >= 500) {
+            } else if (entity.getPosition()[1] > 500) {
                 entities.remove(entity);
                 lives.incrementValue(-1);
             }

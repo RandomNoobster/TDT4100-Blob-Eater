@@ -47,10 +47,11 @@ public class Player extends Entity {
      * Moves the player to the left by the speed
      */
     public void moveLeft() {
+        xPos = this.getPosition()[0];
         if (xPos - speed < 0) {
-            this.xPos = 0;
+            xPos = 0;
         } else {
-            this.xPos -= speed;
+            xPos -= speed;
         }
     }
 
@@ -58,10 +59,11 @@ public class Player extends Entity {
      * Moves the player to the right by the speed
      */
     public void moveRight() {
+        xPos = this.getPosition()[0];
         if (xPos + speed >= 500 - 30) {
-            this.xPos = 500 - 30;
+            xPos = 500 - 30;
         } else {
-            this.xPos += speed;
+            xPos += speed;
         }
     }
 }
