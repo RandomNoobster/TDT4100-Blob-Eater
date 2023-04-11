@@ -2,8 +2,6 @@ package hovedprosjekt.Model;
 
 public class NormalBlob extends Entity {
     private int points;
-    private double xPos;
-    private double yPos;
 
     /**
      * Creates a new {@link NormalBlob} object.
